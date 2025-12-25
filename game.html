@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Hero | E-Commerce Training</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9', // Sky Blue (Professional)
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #F1F5F9; /* Slate 100 - typischer Dashboard Hintergrund */
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* --- TICKET DESIGN --- */
+        .ticket {
+            position: absolute;
+            background: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-left: 4px solid #0ea5e9; /* Blauer Indikator links */
+            font-weight: 600;
+            color: #334155;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 10;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        /* Ticket Icons (Pseudo) */
+        .ticket::before {
+            content: "✉️";
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        /* Aktives Ticket (wird gerade getippt) */
+        .ticket.active {
+            border-left-color: #22c55e; /* Grün */
+            background-color: #f0fdf4;
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            z-index: 20;
+        }
+
+        /* --- UI ELEMENTS --- */
+        .dashboard-header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        /* CSAT Bar (Progress Bar für Leben) */
+        .csat-container {
+            width: 200px;
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .csat-fill {
+            height: 100%;
+            background: #22c55e;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        /* Feedback Animation "Solved" */
+        .solved-feedback {
+            position: absolute;
+            color: #22c55e;
+            font-weight: bold;
+            font-size: 0.9rem;
+            animation: floatUp 0.6s forwards;
+            pointer-events: none;
+            background: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-30px); }
+        }
+
+        /* Shake Effekt bei Fehler (Ticket missed) */
+        .shake-screen { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translateX(-1px); }
+            20%, 80% { transform: translateX(2px); }
+            30%, 50%, 70% { transform: translateX(-4px); }
+            40%, 60% { transform: translateX(4px); }
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col text-slate-800">
+
+    <header class="dashboard-header py-4 px-8 flex justify-between items-center z-40">
+        <div class="flex items-center gap-4">
+            <div class="bg-brand-600 text-white font-bold p-2 rounded">SH</div>
+            <div>
+                <h1 class="font-bold text-sm uppercase tracking-wide text-slate-500">Support Hero</h1>
+                <p class="text-xs text-slate-400">Live Ticket Queue</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-8">
+            <div class="text-right">
+                <div class="text-xs text-slate-400 uppercase font-bold">Tickets Solved</div>
+                <div class="text-2xl font-bold font-mono text-brand-600" id="score-display">0</div>
+            </div>
+            
+            <div>
+                <div class="flex justify-between text-xs text-slate-400 uppercase font-bold mb-1">
+                    <span>Kundenzufriedenheit (CSAT)</span>
+                    <span id="csat-text">100%</span>
+                </div>
+                <div class="csat-container">
+                    <div id="csat-bar" class="csat-fill" style="width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div id="game-over-screen" class="hidden absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-center">
+        <div class="bg-white p-10 rounded-xl shadow-2xl max-w-md w-full border-t-8 border-red-500">
+            <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-6">⚠️</div>
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">Queue Overload</h2>
+            <p class="text-slate-500 mb-8">Die Kundenzufriedenheit ist unter das kritische Level gefallen.</p>
+            
+            <div class="flex justify-between items-center bg-slate-50 p-4 rounded-lg mb-8 border border-slate-200">
+                <span class="text-slate-500 font-medium">Bearbeitete Tickets:</span>
+                <span class="text-2xl font-bold text-slate-800" id="final-score">0</span>
+            </div>
+
+            <button onclick="startGame()" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" /></svg>
+                Schicht neustarten
+            </button>
+        </div>
+    </div>
+
+    <div id="start-screen" class="absolute inset-0 bg-white z-50 flex flex-col items-center justify-center text-center">
+        <div class="max-w-2xl px-6">
+            <span class="text-brand-600 font-bold tracking-widest uppercase text-sm mb-2 block">Interactive Training Module</span>
+            <h1 class="text-5xl font-bold text-slate-900 mb-6 tracking-tight">Support Typing Trainer</h1>
+            <p class="text-xl text-slate-500 mb-10 leading-relaxed">
+                Willkommen im Ticketsystem. Ihre Aufgabe ist es, eingehende Kundenanfragen (Keywords) durch schnelles Tippen zu schließen, bevor sie eskalieren.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 text-left">
+                <div class="p-4 border border-slate-200 rounded-lg">
+                    <div class="font-bold text-slate-800 mb-1">⚡️ Geschwindigkeit</div>
+                    <div class="text-sm text-slate-500">Tickets werden mit der Zeit schneller.</div>
+                </div>
+                <div class="p-4 border border-slate-200 rounded-lg">
+                    <div class="font-bold text-slate-800 mb-1">🎯 Genauigkeit</div>
+                    <div class="text-sm text-slate-500">Tippfehler verhindern den Abschluss.</div>
+                </div>
+                <div class="p-4 border border-slate-200 rounded-lg">
+                    <div class="font-bold text-slate-800 mb-1">❤️ CSAT Score</div>
+                    <div class="text-sm text-slate-500">Halten Sie die Zufriedenheit über 0%.</div>
+                </div>
+            </div>
+
+            <button onclick="startGame()" class="px-8 py-4 bg-slate-900 text-white font-bold rounded-lg shadow-lg hover:bg-slate-800 hover:translate-y-px transition-all">
+                Training starten
+            </button>
+        </div>
+    </div>
+
+    <main id="game-area" class="relative flex-grow bg-slate-50 overflow-hidden cursor-text">
+        <div class="absolute inset-0" style="background-image: linear-gradient(#e2e8f0 1px, transparent 1px); background-size: 100% 100px; opacity: 0.5;"></div>
+        
+        <div class="absolute bottom-0 w-full h-1 bg-red-400 opacity-50"></div>
+        <div class="absolute bottom-2 right-4 text-xs font-bold text-red-400 uppercase">Escalation Threshold</div>
+    </main>
+
+    <script>
+        // --- CONTENT: E-COMMERCE & SUPPORT VOCABULARY ---
+        const words = [
+            // Kurz
+            "ABO", "FAQ", "APP", "ZOLL", "AGB", "IBAN", "SEPA", "CHAT", "DEAL",
+            // Mittel
+            "STORNO", "RETOURE", "VERSAND", "PAYPAL", "KLARNA", "RABATT", "KONTO",
+            "LOGIN", "LOGOUT", "BESTAND", "LAGER", "HERMES", "PAKET", "STATUS",
+            "RECHNUNG", "GUTSCHEIN", "LIEFERUNG", "ERSTATTUNG", "BESCHWERDE",
+            // Lang (Boss Tickets)
+            "SENDUNGSNUMMER", "WIDERRUFSRECHT", "KUNDENSERVICE", "WARTEZEIT",
+            "RÜCKSENDESCHEIN", "GEWÄHRLEISTUNG", "WARENKORBWERT", "GUTSCHRIFT",
+            "ZAHLUNGSEINGANG", "BESTELLNUMMER", "PRODUKTMANGEL", "LIEFERVERZUG"
+        ];
+        
+        // --- GAME VARIABLES ---
+        let gameRunning = false;
+        let score = 0;
+        let csat = 100; // Customer Satisfaction (Lives)
+        
+        let spawnRate = 2500; // Start: Alle 2.5 Sek ein Ticket
+        let fallSpeed = 1.0;  // Pixel/Frame
+        
+        let activeWords = []; 
+        let lastSpawn = 0;
+        let animationFrameId;
+
+        // Elements
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const gameArea = document.getElementById('game-area');
+        const scoreDisplay = document.getElementById('score-display');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const csatBar = document.getElementById('csat-bar');
+        const csatText = document.getElementById('csat-text');
+
+        function startGame() {
+            gameRunning = true;
+            score = 0;
+            csat = 100;
+            
+            spawnRate = 2500;
+            fallSpeed = 1.0;
+            activeWords = [];
+            
+            // Clean up old tickets
+            const oldTickets = document.querySelectorAll('.ticket');
+            oldTickets.forEach(el => el.remove());
+            
+            updateUI();
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function gameLoop(timestamp) {
+            if (!gameRunning) return;
+
+            // 1. Spawn Logic
+            if (timestamp - lastSpawn > spawnRate) {
+                spawnTicket();
+                lastSpawn = timestamp;
+                
+                // Difficulty Scaling (Professional Curve)
+                if(spawnRate > 1000) spawnRate -= 15;
+                if(fallSpeed < 3.0) fallSpeed += 0.01;
+            }
+
+            // 2. Movement Logic
+            activeWords.forEach((wordObj, index) => {
+                wordObj.y += fallSpeed;
+                wordObj.element.style.top = wordObj.y + 'px';
+
+                // Check Bottom (Escalation)
+                // gameArea height - ticket height approx
+                if (wordObj.y > gameArea.clientHeight - 60) {
+                    escalateTicket(index);
+                }
+            });
+
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function spawnTicket() {
+            const text = words[Math.floor(Math.random() * words.length)];
+            const el = document.createElement('div');
+            el.classList.add('ticket');
+            
+            // Ticket ID generieren für den Tech-Look
+            const ticketId = Math.floor(Math.random() * 9000) + 1000;
+            
+            // HTML Structure des Tickets
+            el.innerHTML = `
+                <div class="flex flex-col leading-tight">
+                    <span class="text-[10px] text-slate-400 font-normal uppercase">#${ticketId}</span>
+                    <span class="word-text">${text}</span>
+                </div>
+            `;
+            
+            // Positionierung: Padding links/rechts beachten
+            const maxX = window.innerWidth - 200; 
+            const x = Math.random() * (maxX - 100) + 50;
+            
+            el.style.left = x + 'px';
+            el.style.top = '-60px'; 
+            
+            gameArea.appendChild(el);
+
+            activeWords.push({
+                element: el,
+                text: text,
+                x: x,
+                y: -60,
+                matchedIndex: 0 
+            });
+        }
+
+        function removeTicket(index) {
+            if (activeWords[index]) {
+                activeWords[index].element.remove();
+                activeWords.splice(index, 1);
+            }
+        }
+
+        function escalateTicket(index) {
+            // Ticket nicht geschafft -> CSAT sinkt
+            csat -= 20; // 5 Fehler = Game Over
+            if (csat < 0) csat = 0;
+
+            // Visual Feedback
+            document.body.classList.add('shake-screen');
+            setTimeout(() => document.body.classList.remove('shake-screen'), 400);
+
+            // Ticket entfernen
+            removeTicket(index);
+            updateUI();
+
+            if (csat <= 0) {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            gameRunning = false;
+            cancelAnimationFrame(animationFrameId);
+            finalScoreDisplay.innerText = score;
+            gameOverScreen.classList.remove('hidden');
+        }
+
+        function updateUI() {
+            scoreDisplay.innerText = score;
+            csatText.innerText = csat + "%";
+            csatBar.style.width = csat + "%";
+            
+            // Color changing bar
+            if (csat > 60) csatBar.style.backgroundColor = "#22c55e"; // Green
+            else if (csat > 30) csatBar.style.backgroundColor = "#f59e0b"; // Orange
+            else csatBar.style.backgroundColor = "#ef4444"; // Red
+        }
+
+        // --- TYPING LOGIC ---
+        document.addEventListener('keydown', (e) => {
+            if (!gameRunning) return;
+
+            const key = e.key.toUpperCase();
+            
+            // 1. Check Active Ticket first
+            const activeWord = activeWords.find(w => w.matchedIndex > 0);
+
+            if (activeWord) {
+                if (activeWord.text[activeWord.matchedIndex] === key) {
+                    typeLetter(activeWord);
+                }
+            } else {
+                // 2. Find new ticket (the one closest to bottom = highest priority)
+                const candidates = activeWords.filter(w => w.text[0] === key);
+                if (candidates.length > 0) {
+                    candidates.sort((a, b) => b.y - a.y);
+                    typeLetter(candidates[0]);
+                }
+            }
+        });
+
+        function typeLetter(wordObj) {
+            wordObj.matchedIndex++;
+            
+            // Visual Update within the ticket
+            const completed = wordObj.text.substring(0, wordObj.matchedIndex);
+            const remaining = wordObj.text.substring(wordObj.matchedIndex);
+            
+            // Wir müssen das innere HTML finden, da wir jetzt <div> Strukturen haben
+            const textSpan = wordObj.element.querySelector('.word-text');
+            
+            // Completed parts get highlighted blue
+            textSpan.innerHTML = `<span class="text-brand-600">${completed}</span><span class="text-slate-300">${remaining}</span>`;
+            
+            // Ticket markieren
+            wordObj.element.classList.add('active');
+
+            if (wordObj.matchedIndex === wordObj.text.length) {
+                solveTicket(wordObj);
+            }
+        }
+
+        function solveTicket(wordObj) {
+            // Visual Feedback: "Solved" floating text
+            const feedback = document.createElement('div');
+            feedback.classList.add('solved-feedback');
+            feedback.innerText = "Ticket Closed ✓";
+            feedback.style.left = wordObj.x + 'px';
+            feedback.style.top = wordObj.y + 'px';
+            gameArea.appendChild(feedback);
+            
+            setTimeout(() => feedback.remove(), 600);
+
+            const index = activeWords.indexOf(wordObj);
+            removeTicket(index);
+
+            score++;
+            updateUI();
+        }
+    </script>
+</body>
+</html>
