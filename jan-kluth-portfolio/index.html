@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="de" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FOCUS FUEL | Limited Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Space Grotesk', sans-serif; 
+            background-color: #050505;
+            color: #ffffff;
+            overflow-x: hidden;
+            cursor: none; /* Standard Cursor verstecken */
+        }
+        
+        /* Custom Cursor */
+        .cursor-dot, .cursor-outline {
+            position: fixed;
+            top: 0; left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        .cursor-dot { width: 8px; height: 8px; bg-white; background: white; }
+        .cursor-outline { 
+            width: 40px; height: 40px; 
+            border: 1px solid rgba(255, 255, 255, 0.5); 
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+
+        /* Marquee Animation */
+        .marquee-container { overflow: hidden; white-space: nowrap; position: absolute; opacity: 0.1; top: 10%; z-index: 0; pointer-events: none;}
+        .marquee-content { display: inline-block; animation: marquee 20s linear infinite; font-size: 15vw; font-weight: 900; }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        /* Glitch Text Effekt */
+        .glitch:hover {
+            text-shadow: 2px 0 #ff00ff, -2px 0 #00ffff;
+        }
+
+        /* Gradient Button Animation */
+        .btn-gradient {
+            background-size: 200% auto;
+            background-image: linear-gradient(to right, #FF512F 0%, #DD2476 51%, #FF512F 100%);
+            transition: 0.5s;
+        }
+        .btn-gradient:hover { background-position: right center; }
+    </style>
+</head>
+<body>
+
+    <div class="cursor-dot hidden md:block"></div>
+    <div class="cursor-outline hidden md:block"></div>
+
+    <div class="marquee-container">
+        <div class="marquee-content">
+            FOCUS /// ENERGY /// CREATE /// FOCUS /// ENERGY /// CREATE ///
+        </div>
+    </div>
+
+    <nav class="fixed w-full z-50 px-8 py-6 flex justify-between items-center mix-blend-difference">
+        <div class="text-2xl font-bold tracking-tighter hoverable">FF_2025®</div>
+        <div class="text-sm font-mono opacity-70">LIMITED BATCH #042</div>
+    </nav>
+
+    <main class="h-screen flex flex-col md:flex-row items-center justify-center relative px-4">
+        
+        <div class="z-10 md:w-1/2 space-y-6 md:pl-10 text-center md:text-left">
+            <h1 class="text-6xl md:text-8xl font-bold leading-none tracking-tighter glitch hoverable transition-all duration-300">
+                PURE<br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-600">FLOW</span><br>
+                STATE
+            </h1>
+            <p class="text-gray-400 text-lg max-w-md mx-auto md:mx-0 font-light border-l-2 border-gray-800 pl-4">
+                Code schneller. Designe besser. Der erste Nootropic-Kaffee für High-Performer. Kein Zittern. Nur Fokus.
+            </p>
+            
+            <div class="pt-8 flex flex-col md:flex-row gap-6 items-center">
+                <button onclick="addToCart()" class="hoverable btn-gradient text-white px-10 py-4 rounded-full font-bold uppercase tracking-widest text-sm shadow-[0_0_20px_rgba(221,36,118,0.5)]">
+                    Get Supply [ 24€ ]
+                </button>
+                <div class="text-xs font-mono text-gray-500 hoverable">
+                    ● SHIPMENT: 24H<br>● STOCK: LOW
+                </div>
+            </div>
+        </div>
+
+        <div class="md:w-1/2 flex justify-center items-center z-10 mt-12 md:mt-0 perspective-1000">
+            <div id="product-card" class="hoverable relative w-72 h-96 bg-gray-900 rounded-2xl border border-gray-800 transition-transform duration-100 ease-linear transform-style-3d shadow-2xl group cursor-pointer">
+                
+                <div class="absolute -inset-1 bg-gradient-to-r from-orange-600 to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+                
+                <div class="relative h-full w-full bg-black rounded-2xl p-6 flex flex-col items-center justify-between border border-gray-800 overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
+                    
+                    <div class="z-10 w-full flex justify-between text-xs font-mono text-gray-500">
+                        <span>EST. 2025</span>
+                        <span>NET 500G</span>
+                    </div>
+
+                    <div class="z-10 w-40 h-40 rounded-full bg-gradient-to-tr from-orange-500 via-red-500 to-purple-600 blur-md animate-pulse"></div>
+                    <div class="absolute inset-0 flex items-center justify-center z-20">
+                        <span class="text-9xl font-bold opacity-10 select-none">FF</span>
+                    </div>
+
+                    <div class="z-10 text-center">
+                        <h2 class="text-2xl font-bold tracking-widest">FOCUS FUEL</h2>
+                        <p class="text-xs text-gray-400 mt-1">DARK ROAST / NOOTROPIC</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="border-t border-gray-900 bg-black/50 backdrop-blur text-white py-8 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+        <div>
+            <span class="block text-3xl font-bold text-orange-500 counter" data-target="250">0</span>
+            <span class="text-xs text-gray-500 uppercase tracking-widest">mg Koffein</span>
+        </div>
+        <div>
+            <span class="block text-3xl font-bold text-purple-500">0%</span>
+            <span class="text-xs text-gray-500 uppercase tracking-widest">Zucker / Bullshit</span>
+        </div>
+        <div>
+            <span class="block text-3xl font-bold text-white">4.9</span>
+            <span class="text-xs text-gray-500 uppercase tracking-widest">Sterne Rating</span>
+        </div>
+        <div>
+            <span class="block text-3xl font-bold text-green-500">BIO</span>
+            <span class="text-xs text-gray-500 uppercase tracking-widest">Zertifiziert</span>
+        </div>
+    </div>
+
+    <script>
+        // 1. CUSTOM CURSOR LOGIC
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorOutline = document.querySelector('.cursor-outline');
+        const hoverables = document.querySelectorAll('.hoverable');
+
+        window.addEventListener('mousemove', (e) => {
+            const posX = e.clientX;
+            const posY = e.clientY;
+
+            // Dot folgt direkt
+            cursorDot.style.left = `${posX}px`;
+            cursorDot.style.top = `${posY}px`;
+
+            // Outline folgt verzögert (smooth animation via CSS transition)
+            cursorOutline.style.left = `${posX}px`;
+            cursorOutline.style.top = `${posY}px`;
+            
+            // Outline Animation
+            cursorOutline.animate({
+                left: `${posX}px`,
+                top: `${posY}px`
+            }, { duration: 500, fill: "forwards" });
+        });
+
+        // Hover Effekt für Cursor
+        hoverables.forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursorOutline.style.width = '60px';
+                cursorOutline.style.height = '60px';
+                cursorOutline.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+            });
+            el.addEventListener('mouseleave', () => {
+                cursorOutline.style.width = '40px';
+                cursorOutline.style.height = '40px';
+                cursorOutline.style.backgroundColor = 'transparent';
+            });
+        });
+
+        // 2. 3D TILT EFFECT AUF DER PRODUKTKARTE
+        const card = document.getElementById('product-card');
+
+        document.addEventListener('mousemove', (e) => {
+            const x = (window.innerWidth / 2 - e.pageX) / 25;
+            const y = (window.innerHeight / 2 - e.pageY) / 25;
+            // Wir limitieren den Effekt auf die Karte
+            card.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
+        });
+        
+        // Reset wenn Maus rausgeht (optional, hier global gelassen für cooleren Effekt)
+
+        // 3. WARENKORB ALERT (Stylisch)
+        function addToCart() {
+            const btn = document.querySelector('.btn-gradient');
+            const originalText = btn.innerText;
+            
+            btn.innerText = "ADDED /// DANKE";
+            btn.classList.add('scale-105');
+            
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.remove('scale-105');
+            }, 2000);
+        }
+
+        // 4. NUMBER COUNTER ANIMATION
+        const counters = document.querySelectorAll('.counter');
+        counters.forEach(counter => {
+            const updateCount = () => {
+                const target = +counter.getAttribute('data-target');
+                const count = +counter.innerText;
+                const inc = target / 100;
+                if (count < target) {
+                    counter.innerText = Math.ceil(count + inc);
+                    setTimeout(updateCount, 20);
+                } else {
+                    counter.innerText = target;
+                }
+            };
+            updateCount();
+        });
+    </script>
+</body>
+</html>
